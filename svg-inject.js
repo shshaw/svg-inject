@@ -1,3 +1,4 @@
+console.clear();
 (function (root, factory) {
   if (typeof define === "function" && define.amd) {
     define(factory);
@@ -15,19 +16,22 @@
         error = function(err){
           callback(null,new Error(err));
         };
-
     request = new XMLHttpRequest();
-    request.open("GET", url);
-    request.onreadystatechange = function() {
-      if (4 === this.readyState) {
-        if ( this.status >= 200 && this.status <= 400 ) {
-          callback(this.responseText);
-        } else { error(this.responseText); }
-      }
+    if ("withCredentials" in request) {
+      // XHR for Chrome/Firefox/Opera/Safari.
+      request.open('GET', url, true);
+    } else if (typeof XDomainRequest != "undefined") {
+      // XDomainRequest for IE.
+      request = new XDomainRequest();
+      request.open('GET', url);
+    }
+    request.onload = function() {
+      if ( !this.status || (this.status >= 200 && this.status <= 400 ) ) {
+        callback(this.responseText);
+      } else { error(this.responseText); }
     };
     request.onerror = error;
     request.send();
-
     return request;
   }
 
@@ -45,28 +49,39 @@
 
     element.style.opacity = 0;
 
-    return ajax(url,function(res){
-        var div = document.createElement('div');
-        div.innerHTML = res;
+    return ajax(url,function(res,error){
+      
+      if ( error || !res ) { 
+        element.style.opacity = 1;
+        return callback(null,error);
+      }
+      
+      var d = document.implementation.createHTMLDocument(""),
+          svg;
 
-        var svg = div.firstChild;
-        for ( var key in attributes ){
-          svg.setAttribute(key,attributes[key]);
-        }
+      d.body.innerHTML = res;
 
-        if (element.parentNode) {
-          element.parentNode.replaceChild(svg, element)
-        }
+      svg = d.getElementsByTagName('svg')[0];
+      if ( !svg ) { return; }
 
-        callback(svg);
-      });
+      for ( var key in attributes ){
+        svg.setAttribute(key,attributes[key]);
+      }
+
+      if (element.parentNode) {
+        element.parentNode.replaceChild(svg, element)
+      }
+
+      return callback(svg);
+
+    });
   }
 
   inject.ajax = ajax;
 
   inject.all = function(obj,callback) {
     obj = ( typeof obj === 'string' ? document.querySelectorAll(obj) :
-            obj instanceof Node ? [obj] : obj );
+           obj instanceof Node ? [obj] : obj );
 
     var length = obj.length,
         i = 0;
