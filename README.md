@@ -1,36 +1,40 @@
-# svg-inject [![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
+# svg-inject
 
-Replace an `<img>` element with an inline SVG. This way you can still earn
-the benefits of not inlining every occurence of an SVG, but still *style
-their contents using CSS selectors*. This makes adding hover states and the like
-much more straightforward :)
+Replace an `<img>` element with an inline SVG.
+
+* Keeps your initial page weight down
+* Takes advantage of browser caching
+* Style & manipulate individual SVG pieces with CSS selectors or Javascript!
+
 
 ## Usage
 
-[![NPM](https://nodei.co/npm/svg-inject.png)](https://nodei.co/npm/svg-inject/)
-
-### inject(element, [callback]) ###
+### inject(element, [callback]) 
 
 Replace the `<img>` `element` with an SVG, calling `callback(err, svg)` when
 complete.
 
 ``` javascript
-// Replaces all existing SVG images on the DOM with inline SVGs:
-var inject = require('svg-inject')
-var svgs = document.querySelector('img[src$=".svg"]')
-
-for (var i = 0; i < svgs.length; i++) {
-  inject(svgs[i], function(err, svg) {
-    if (err) throw err
-    // do additional things with `svg` here if you like.
-  })
-}
+// Replaces the first <img> with inline SVG:
+var img = document.querySelector('img[src$=".svg"]');
+inject(img, function(svg, err) {
+  if (err) { throw err }
+  // do additional things with `svg` here if you like.
+})
 ```
 
-## See Also
+### inject.all(element, [callback]) 
 
-* [Manipulating SVG Icons with Simple CSS](http://webdesign.tutsplus.com/articles/manipulating-svg-icons-with-simple-css--webdesign-15694)
-* [Using CSS to display state within an icon](http://tutsplus.github.io/Styling-Iconic/state/index.html)
+svg-inject will use `querySelectorAll` and run `inject` on all the matching
+DOM elements.
+
+``` javascript
+// Replaces the all elements that have a [data-inject] attribute with inline SVG:
+inject.all('[data-inject]', function(svg, err) {
+  if (err) { throw err }
+  // do additional things with `svg` here if you like.
+})
+```
 
 ## License
 
