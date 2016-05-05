@@ -37,14 +37,15 @@
   function inject(element, callback) {
     callback = callback || function(){};
 
-    var url = element.getAttribute('src'),
-        attributes = {};
-
-    if ( !url ) return;
+    var attributes = {},
+        url;
 
     slice.call(element.attributes).map(function(attr) {
       attributes[attr.name] = attr.value;
     });
+    
+    url = attributes['src'] || attributes['data-svg-inject'];
+    if ( !url ) return;
 
     element.style.opacity = 0;
 
